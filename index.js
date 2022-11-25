@@ -31,11 +31,11 @@ async function run() {
             res.send(products);
         })
 
-        app.get('/products/:category', async (req, res) => {
-            const category = req.params.category;
-            console.log(category);
+        app.get('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id);
             const query = {
-                category: category
+                category: id
             }
             const result = await allProductsCollection.find(query).toArray();
             res.send(result);
