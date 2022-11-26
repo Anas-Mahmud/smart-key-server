@@ -18,19 +18,23 @@ async function run() {
     try {
         const categoryCollection = client.db('smartKey').collection('category');
         const allProductsCollection = client.db('smartKey').collection('allProducts');
+        const bookingsCollection = client.db('smartKey').collection('bookings');
 
+        // get all categories
         app.get('/categories', async (req, res) => {
             const query = {};
             const category = await categoryCollection.find(query).toArray();
             res.send(category);
         })
 
+        // get all products
         app.get('/allProducts', async (req, res) => {
             const query = {};
             const products = await allProductsCollection.find(query).toArray();
             res.send(products);
         })
 
+        // get products by category
         app.get('/products/:id', async (req, res) => {
             const id = req.params.id;
             console.log(id);
@@ -40,6 +44,15 @@ async function run() {
             const result = await allProductsCollection.find(query).toArray();
             res.send(result);
         })
+
+        // post booking
+        app.post('/bookings', async (req, res) => {
+            const booking = req.body;
+            const result = await bookingsCollection.insertOne(booking);
+            res.send(result)
+        })
+
+
     }
     finally {
 
