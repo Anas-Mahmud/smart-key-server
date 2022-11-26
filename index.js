@@ -19,6 +19,7 @@ async function run() {
         const categoryCollection = client.db('smartKey').collection('category');
         const allProductsCollection = client.db('smartKey').collection('allProducts');
         const bookingsCollection = client.db('smartKey').collection('bookings');
+        const usersCollection = client.db('smartKey').collection('users');
 
         // get all categories
         app.get('/categories', async (req, res) => {
@@ -60,6 +61,12 @@ async function run() {
             res.send(result)
         })
 
+        // post create user
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            const result = await usersCollection.insertOne(user);
+            res.send(result);
+        });
 
     }
     finally {
