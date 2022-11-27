@@ -37,6 +37,18 @@ async function run() {
         const bookingsCollection = client.db('smartKey').collection('bookings');
         const usersCollection = client.db('smartKey').collection('users');
 
+        // verifyAdmin after verifyJWT
+        const verifyAdmin = async (req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail };
+            const user = await usersCollection.findOne(query);
+
+            if (user?.role !== 'admin') {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            next();
+        }
+
         // get all categories
         app.get('/categories', async (req, res) => {
             const query = {};
@@ -67,20 +79,30 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/myProducts', async (req, res) => {
+        // get user products by email *
+        app.get('/myProducts', verifyJWT, async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
             const result = await allProductsCollection.find(query).toArray();
             res.send(result);
         })
 
-        app.post('/products', async (req, res) => {
+        // post product *
+        app.post('/products', verifyJWT, async (req, res) => {
             const product = req.body;
             const result = await allProductsCollection.insertOne(product);
             res.send(result);
         })
 
-        // get booking by email
+        // delete product *
+        app.delete('/product/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await allProductsCollection.deleteOne(filter);
+            res.send(result);
+        })
+
+        // get booking by email *
         app.get('/bookings', verifyJWT, async (req, res) => {
             const email = req.query.email;
             const decodedEmail = req.decoded.email;
@@ -132,23 +154,14 @@ async function run() {
             res.send(result);
         });
 
-        // make admin
-        app.put('/users/admin/:id', verifyJWT, async (req, res) => {
-            const decodedEmail = req.decoded.email;
-            const query = { email: decodedEmail };
-            const user = await usersCollection.findOne(query);
-
-            if (user?.role !== 'admin') {
-                return res.status(403).send({ message: 'forbidden access' })
-            }
-
+        // make admin *
+        app.put('/users/admin/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
-            console.log(id);
             const filter = { _id: ObjectId(id) };
             const option = { upsert: true };
             const updatedDoc = {
                 $set: {
-                    role: 'admin'
+                    role: 'verified'
                 }
             }
             const result = await usersCollection.updateOne(filter, updatedDoc, option)
