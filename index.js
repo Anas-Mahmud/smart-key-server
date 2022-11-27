@@ -44,6 +44,12 @@ async function run() {
             res.send(category);
         })
 
+        app.get('/selectCategories', async (req, res) => {
+            const query = {};
+            const result = await categoryCollection.find(query).project({ categoryId: 1 }).toArray();
+            res.send(result);
+        })
+
         // get all products
         app.get('/allProducts', async (req, res) => {
             const query = {};
@@ -54,11 +60,23 @@ async function run() {
         // get products by category
         app.get('/products/:id', async (req, res) => {
             const id = req.params.id;
-            console.log(id);
             const query = {
                 category: id
             }
             const result = await allProductsCollection.find(query).toArray();
+            res.send(result);
+        })
+
+        app.get('/myProducts', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const result = await allProductsCollection.find(query).toArray();
+            res.send(result);
+        })
+
+        app.post('/products', async (req, res) => {
+            const product = req.body;
+            const result = await allProductsCollection.insertOne(product);
             res.send(result);
         })
 
@@ -99,7 +117,6 @@ async function run() {
             const users = await usersCollection.find(query).toArray();
             res.send(users);
         });
-
 
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
