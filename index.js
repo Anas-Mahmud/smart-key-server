@@ -133,12 +133,27 @@ async function run() {
             res.status(403).send({ accessToken: '' })
         });
 
-        // get all users
-        app.get('/users', async (req, res) => {
-            const query = {};
+        // get buyer
+        app.get('/buyers', async (req, res) => {
+            const query = { role: 'buyer' };
             const users = await usersCollection.find(query).toArray();
             res.send(users);
         });
+
+        // get seller
+        app.get('/sellers', async (req, res) => {
+            const query = { role: 'seller' };
+            const users = await usersCollection.find(query).toArray();
+            res.send(users);
+        });
+
+        // delete user *
+        app.delete('/user/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await usersCollection.deleteOne(filter);
+            res.send(result);
+        })
 
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
@@ -161,7 +176,7 @@ async function run() {
             const option = { upsert: true };
             const updatedDoc = {
                 $set: {
-                    role: 'verified'
+                    status: 'verified'
                 }
             }
             const result = await usersCollection.updateOne(filter, updatedDoc, option)
