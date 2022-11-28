@@ -133,6 +133,13 @@ async function run() {
             res.status(403).send({ accessToken: '' })
         });
 
+        // // get verified User
+        // app.get('/verifiedUser', async (req, res) => {
+        //     const query = { status: 'verified' };
+        //     const users = await usersCollection.find(query).toArray();
+        //     res.send(users);
+        // });
+
         // get buyer
         app.get('/buyers', async (req, res) => {
             const query = { role: 'buyer' };
@@ -148,18 +155,27 @@ async function run() {
         });
 
         // delete user *
-        app.delete('/user/:id', verifyJWT, async (req, res) => {
+        app.delete('/user/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const result = await usersCollection.deleteOne(filter);
             res.send(result);
         })
 
+        // isAdmin verify
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email }
             const user = await usersCollection.findOne(query);
             res.send({ isAdmin: user?.role === 'admin' })
+        })
+
+        // isSeller verify
+        app.get('/users/seller/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isSeller: user?.role === 'seller' })
         })
 
         // post create user
@@ -169,7 +185,7 @@ async function run() {
             res.send(result);
         });
 
-        // make admin *
+        // make verify *
         app.put('/users/admin/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
